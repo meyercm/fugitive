@@ -5,16 +5,17 @@
 #define DEBOUNCE_INTERVAL_MS 1
 #define DEBOUNCE_COUNT 5
 
-#define KEY_COUNT 7
-#define KEY0 3
-#define KEY1 4
-#define KEY2 5
-#define KEY3 6
-#define KEY4 7
+#define KEY0 2
+#define KEY1 3
+#define KEY2 4
+#define KEY3 5
+#define KEY4 6
 #define KEY5 8
 #define KEY6 9
 
 namespace KeyDetection {
+  const int KEY_COUNT = 7;
+
   typedef enum {
     KEY_DOWN,
     KEY_UP,

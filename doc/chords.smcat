@@ -1,8 +1,7 @@
 #start the keyboard
 #emulation now
-initial => collecting: keypress;
+initial => collecting: key down;
 idle => collecting: keypress;
-collecting => ^valid: check;
-^valid => idle: [valid] send keydown;
-^valid => collecting: [not valid];
-collecting => idle: timeout (5ms?);
+collecting => collecting: key down;
+collecting => idle: [after 10ms]
+                    send keystroke;

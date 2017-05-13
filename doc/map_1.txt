@@ -11,8 +11,8 @@
 1101 0B: f
 0011 0C: u
 1011 0D: l
-0111 0E:
-1111 0F: <reserved?>
+0111 0E: c
+1111 0F: w
 0000 20: <space>
 1000 21: <mode advancement?>
 0100 22: <mode advancement?>
@@ -22,38 +22,14 @@
 0110 26: g
 1110 27: p
 0001 28: <mode advancement?>
-1001 29:
-0101 2A: c
-1101 2B:
-0011 2C: w
+1001 29: x
+0101 2A: b
+1101 2B: q
+0011 2C: v
 1011 2D: y
-0111 2E:
-1111 2F:
+0111 2E: j
+1111 2F: z
 
-
-a
-b
-c
-d
-
-f
-g
-i
-j
-k
-l
-m
-n
-o
-p
-q
-r
-u
-v
-w
-x
-y
-z
 0
 1
 2

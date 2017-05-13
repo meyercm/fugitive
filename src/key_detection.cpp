@@ -1,8 +1,9 @@
-#include "key_detection.h"
 #include <Arduino.h>
+#include "key_detection.h"
 #include "shared_clock.h"
 
 namespace KeyDetection{
+
   static void on_timer_elapse(void* context, void* extra, size_t timer_id);
   static KeyCallback subscriber;
   static int keys[] = {KEY0, KEY1, KEY2, KEY3, KEY4, KEY5, KEY6,};
