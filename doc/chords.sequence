@@ -1,0 +1,11 @@
+title: Keypress / Valid Chord
+
+Keys->MCU: Keydown (1)
+MCU->MCU: is valid?
+MCU->Host: (y) Keypress('B')
+MCU->MCU: (n) start timer (5ms)
+Keys->MCU: Keydown (3)
+Keys->MCU: Keydown (4)
+note left of Keys: <N ms (5?)
+note left of Keys:
+MCU->HOST: KeyPress ('A')

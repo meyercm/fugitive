@@ -1,0 +1,39 @@
+x th 1.52
+x he 1.28
+x in 0.94
+x er 0.94
+x an 0.82
+x re 0.68
+x nd 0.63
+x at 0.59
+x on 0.57
+x nt 0.56
+x ha 0.56
+x es 0.56
+x st 0.55
+x en 0.55
+x ed 0.53
+x to 0.52
+x it 0.50
+x ou 0.50
+x ea 0.47
+x hi 0.46
+x is 0.46
+x or 0.43
+ti 0.34
+as 0.33
+te 0.27
+et 0.19
+ng 0.18
+of 0.16
+al 0.09
+de 0.09
+se 0.08
+le 0.08
+sa 0.06
+si 0.05
+ar 0.04
+ve 0.04
+ra 0.04
+ld 0.02
+ur 0.02

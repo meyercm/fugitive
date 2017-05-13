@@ -1,0 +1,89 @@
+1000 01: a
+0100 02: o
+1100 03: h
+0010 04: e
+1010 05: i
+0110 06: n
+1110 07: s
+0001 08: t
+1001 09: d
+0101 0A: r
+1101 0B: f
+0011 0C: u
+1011 0D: l
+0111 0E:
+1111 0F: <reserved?>
+0000 20: <space>
+1000 21: <mode advancement?>
+0100 22: <mode advancement?>
+1100 23: m
+0010 24: <mode advancement?>
+1010 25: k
+0110 26: g
+1110 27: p
+0001 28: <mode advancement?>
+1001 29:
+0101 2A: c
+1101 2B:
+0011 2C: w
+1011 2D: y
+0111 2E:
+1111 2F:
+
+
+a
+b
+c
+d
+
+f
+g
+i
+j
+k
+l
+m
+n
+o
+p
+q
+r
+u
+v
+w
+x
+y
+z
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+
+
+`
+-
+=
+[
+]
+\
+;
+'
+,
+.
+/
+<enter>
+<shift>
+<ctrl>
+<alt>
+<cmd>
+<up>
+<down>
+<left>
+<right>
