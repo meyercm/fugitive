@@ -3,7 +3,6 @@
 
 #include "key_detection.h"
 
-
 namespace ChordParse{
   void on_key_change(KeyDetection::KeyState, int);
 };

@@ -3,20 +3,14 @@
 
 #include <stdint.h>
 #include <Keyboard.h>
-
+#include "voices_mods.h"
 
 namespace Chords {
-
-  const int _NO_KEY = -1;
-  const int MODE_NORMAL = 255;
-  const int MODE_1 = 256;
-  const int MODE_2 = 257;
-  const int MODE_3 = 258;
   const int NUM_CHORDS = 0x6F + 1; // all we've defined so far. TODO: ask clay.
   const int KEY_CMD = KEY_LEFT_GUI;
-  int get_key(int chord_index);
+  int get_key(int chord_index, Voice voice);
 
-  int chordmap[NUM_CHORDS] = {
+  const int NORMAL_CHORDMAP[NUM_CHORDS] = {
     _NO_KEY, // 0
     'a',  // 01
     'o',  // 02
@@ -33,31 +27,31 @@ namespace Chords {
     'l',  // 0D
     'c',  // 0E
     'w',  // 0F
-    KEY_LEFT_SHIFT, // 10
-    'A',  // 11
-    'O',  // 12
-    'H',  // 13
-    'E',  // 14
-    'I',  // 15
-    'N',  // 16
-    'S',  // 17
-    'T',  // 18
-    'D',  // 19
-    'R',  // 1A
-    'F',  // 1B
-    'U',  // 1C
-    'L',  // 1D
-    'C',  // 1E
-    'W',  // 1F
+    _NO_KEY, // 10
+    MOD_SHIFT,  // 11
+    MOD_CTRL,  // 12
+    '`',  // 13
+    MOD_ALT,  // 14
+    _NO_KEY,  // 15
+    _NO_KEY,  // 16
+    _NO_KEY,  // 17
+    MOD_CMD,  // 18
+    _NO_KEY,  // 19
+    _NO_KEY,  // 1A
+    _NO_KEY,  // 1B
+    KEY_TAB,  // 1C
+    _NO_KEY,  // 1D
+    _NO_KEY,  // 1E
+    _NO_KEY,  // 1F  <MOD_LOCK>
     ' ',  // 20
-    MODE_3,  // 21
-    MODE_2,  // 22
+    VOICE_3,  // 21
+    VOICE_2,  // 22
     'm',  // 23
-    MODE_1,  // 24
+    VOICE_1,  // 24
     'k',  // 25
     'g',  // 26
     'p',  // 27
-    MODE_NORMAL,  // 28
+    VOICE_NORMAL,  // 28
     'x',  // 29
     'b',  // 2A
     'q',  // 2B
@@ -66,21 +60,21 @@ namespace Chords {
     'j',  // 2E
     'z',  // 2F
     _NO_KEY,  // 30
-    _NO_KEY,  // 31
-    _NO_KEY,  // 32
-    'M',  // 33
-    _NO_KEY,  // 34
-    'K',  // 35
-    'G',  // 36
-    'P',  // 37
-    _NO_KEY,  // 38
-    'X',  // 39
-    'B',  // 3A
-    'Q',  // 3B
-    'V',  // 3C
-    'Y',  // 3D
-    'J',  // 3E
-    'Z',  // 3F
+    '1',  // 31
+    '2',  // 32
+    '5',  // 33
+    '3',  // 34
+    _NO_KEY,  // 35
+    '6',  // 36
+    '8',  // 37
+    '4',  // 38
+    _NO_KEY,  // 39
+    _NO_KEY,  // 3A
+    _NO_KEY,  // 3B
+    '7',  // 3C
+    _NO_KEY,  // 3D
+    '9',  // 3E
+    '0',  // 3F
     KEY_BACKSPACE, // 40
     KEY_LEFT_ARROW,  // 41
     KEY_DOWN_ARROW,  // 42
@@ -88,15 +82,15 @@ namespace Chords {
     KEY_UP_ARROW,  // 44
     _NO_KEY,  // 45
     KEY_RETURN,  // 46
-    _NO_KEY,  // 47
+    KEY_HOME,  // 47
     KEY_RIGHT_ARROW,  // 48
     KEY_ESC,  // 49
     _NO_KEY,  // 4A
     _NO_KEY,  // 4B
     KEY_PAGE_UP,  // 4C
     _NO_KEY,  // 4D
-    _NO_KEY,  // 4E
-    _NO_KEY,  // 4F
+    KEY_END,  // 4E
+    KEY_DELETE,  // 4F
     _NO_KEY,  // 50 UNUSABLE
     _NO_KEY,  // 51 UNUSABLE
     _NO_KEY,  // 52 UNUSABLE
@@ -113,28 +107,24 @@ namespace Chords {
     _NO_KEY,  // 5D UNUSABLE
     _NO_KEY,  // 5E UNUSABLE
     _NO_KEY,  // 5F UNUSABLE
-    _NO_KEY,  // 60
-    _NO_KEY,  // 61
-    _NO_KEY,  // 62
-    _NO_KEY,  // 63
-    _NO_KEY,  // 64
+    MOD_SHIFT,  // 60
+    ',',  // 61
+    '-',  // 62
+    '[',  // 63
+    '/',  // 64
     _NO_KEY,  // 65
-    _NO_KEY,  // 66
-    _NO_KEY,  // 67
-    _NO_KEY,  // 68
-    _NO_KEY,  // 69
+    '=',  // 66
+    '(',  // 67
+    '.',  // 68
+    '\'',  // 69
     _NO_KEY,  // 6A
     _NO_KEY,  // 6B
-    _NO_KEY,  // 6C
+    ']',  // 6C
     _NO_KEY,  // 6D
-    _NO_KEY,  // 6E
-    _NO_KEY,  // 6F
+    ')',  // 6E
+    '\\',  // 6F
   };
 
-  int get_key(int chord_index){
-    if (chord_index < 0 || chord_index >= NUM_CHORDS) {return _NO_KEY;}
-    return chordmap[chord_index];
-  }
-};
+}
 
 #endif

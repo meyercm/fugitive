@@ -5,11 +5,9 @@
 
 #include "shared_clock.h"
 #include "key_detection.h"
+#include "voices_mods.h"
 #include "chords.h"
-
-#ifndef USE_KEYBOARD
-#define USE_KEYBOARD true
-#endif
+#include "output.h"
 
 #define CHORD_STABILIZE_MS 40
 
@@ -21,15 +19,24 @@ namespace ChordParse{
     STATE_COMPLETE,
   } STATE;
 
+
   static void init_output();
   static void on_chord_complete(void* context, void* extra, size_t timer_id);
   static void on_chord_end();
   static int current_chord();
   static void change_state(STATE);
+  static void clear_mods();
+  static void set_mod(int key);
 
   // local variables
   static STATE state;
-  static uint8_t last_chord = 0;
+  static int last_chord = 0;
+  static int last_key = 0;
+  static Chords::Voice current_voice = Chords::VOICE_NORMAL;
+  static bool mod_cmd = false;
+  static bool mod_alt = false;
+  static bool mod_shift = false;
+  static bool mod_ctrl = false;
 
   void on_key_change(KeyDetection::KeyState event, int key){
     switch (state) {
@@ -73,22 +80,23 @@ namespace ChordParse{
 
   static void on_chord_complete(void* context, void* extra, size_t timer_id){
     change_state(STATE_COMPLETE);
-    //int key = Chords::get_key(last_chord);
+    last_key = Chords::get_key(last_chord, current_voice);
 
-    if (USE_KEYBOARD){
-      Keyboard.press(Chords::get_key(last_chord));
+    if (Chords::is_mod(last_key)){
+      Serial.println("mod detected");
+      set_mod(last_key);
+    } else if (Chords::is_voice(last_key)){
+      Serial.println("voice detected");
+      current_voice = (Chords::Voice)last_key;
     } else {
-      Serial.print("key down: ");
-      Serial.println(Chords::get_key(last_chord));
+      Output::press(last_key);
     }
   }
 
   static void on_chord_end(){
-    if (USE_KEYBOARD){
-      Keyboard.release(Chords::get_key(last_chord));
-    } else {
-      Serial.print("key up: ");
-      Serial.println(Chords::get_key(last_chord));
+      if (Chords::is_regular(last_key)){
+      Output::release(last_key);
+      clear_mods();
     }
   }
 
@@ -110,4 +118,45 @@ namespace ChordParse{
       Serial.println("Simulate starting keyboard now.");
     }
   }
-};
+
+  static void clear_mods() {
+    if (mod_cmd) {
+      Output::release(Chords::KEY_CMD);
+      mod_cmd = false;
+    }
+    if (mod_alt) {
+      Output::release(KEY_LEFT_ALT);
+      mod_alt = false;
+    }
+    if (mod_shift) {
+      Output::release(KEY_LEFT_SHIFT);
+      mod_shift = false;
+    }
+    if (mod_ctrl) {
+      Output::release(KEY_LEFT_CTRL);
+      mod_ctrl = false;
+    }
+  }
+
+  static void set_mod(int key) {
+    switch (key) {
+      case Chords::MOD_CMD: {
+        Output::press(Chords::KEY_CMD);
+        mod_cmd = true;
+      } break;
+      case Chords::MOD_ALT: {
+        Output::press(KEY_LEFT_ALT);
+        mod_alt = true;
+      } break;
+      case Chords::MOD_SHIFT: {
+        Output::press(KEY_LEFT_SHIFT);
+        mod_shift = true;
+      } break;
+      case Chords::MOD_CTRL: {
+        Output::press(KEY_LEFT_CTRL);
+        mod_ctrl = true;
+      } break;
+      default: break;
+    }
+  }
+}
