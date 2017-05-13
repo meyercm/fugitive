@@ -2,13 +2,56 @@
 
 A one-handed, Arduino-based, chorded keyboard.
 
+#### Project Overview
 
-### Notes from the internet:
+Fugitive is an implementation of a 7 key keyboard, inspired by my frustration
+trying to type one-handed.  Unlike normal keyboards, where there is a key for
+each character, `Fugitive` uses a combination of keys pressed simultaneously to
+type a single letter.
+
+Initially, I looked at the [SpiffChorder Project], which definitely shaped the
+direction of my efforts, but eventually decided to write my own firmware, and
+my own chordset.
+
+#### Hardware configuration
+
+My current design uses a [Pro Micro], with an Atmel 32u4 MCU.  The most
+cost-effective source of mechanical switches I could find was an [inexpensive
+mechanical keyboard], which was reasonably easy to harvest switches from using a
+soldering iron and wick.
+
+For an enclosure, I found a styrofoam sphere in the craft aisle, which I sliced
+in half and pressed the switches into.
+
+#### Electrical connections
+
+The seven switches are wired to their own GPIO and to a common ground. The GPIO
+pins are set as `INPUT_PULLUP`. When a pin is pressed, the pin will measure low.
+
+#### Software considerations
+
+I was originally concerned because the 32u4 has less than 7 interruptable pins.
+However, I found a solution (see below) and quickly discarded it- I realized
+that even inefficient software would be far faster than the human using it could
+perceive.
+
+#### Current status
+
+The keyboard is usable as it is (I'm writing this README with it).  However, it
+has a few shortcomings, and at least one bug.
+
+- Periodically seems to miss a single chord
+- F1...F10 are not implemented
+- Only the 'normal' voice (chordmap) is implemented
+- Mouse mode not implemented
+
+
+
+#### Notes from the internet regarding interrupt circuits:
 
 [forum discussion](http://www.avrfreaks.net/forum/multiplex-several-switches-one-external-interrupt)
 
-
-> There's no reason to connect the switches to GND and use diodes. Intead connect the switches like shown in the attached > schematic.
+> There's no reason to connect the switches to GND and use diodes. Intead connect the switches like shown in the attached schematic.
 > 1) To begin with set the INT pin as input with the internal pull-up resistor activated and enable INT.
 > 2) Set all the other pins as outputs pulled to GND. This way the INT input will be pulled low once a switch is pressed.
 > 3a) When INT gets triggered, set the INT pin as output pulled to GND and set all the other pins as inputs with the internal pull-up resistors activated.
