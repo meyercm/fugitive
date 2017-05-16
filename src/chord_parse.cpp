@@ -9,18 +9,16 @@
 #include "chords.h"
 #include "output.h"
 
-#define CHORD_STABILIZE_MS 40
+#define CHORD_STABILIZE_MS 30
 
 namespace ChordParse{
   typedef enum {
-    STATE_INIT,
     STATE_IDLE,
     STATE_COLLECTING,
     STATE_COMPLETE,
   } STATE;
 
 
-  static void init_output();
   static void on_chord_complete(void* context, void* extra, size_t timer_id);
   static void on_chord_end();
   static int current_chord();
@@ -29,8 +27,9 @@ namespace ChordParse{
   static void set_mod(int key);
 
   // local variables
-  static STATE state;
+  static STATE state = STATE_IDLE;
   static int last_chord = 0;
+  static size_t timer = -1;
   static int last_key = 0;
   static Chords::Voice current_voice = Chords::VOICE_NORMAL;
   static bool mod_cmd = false;
@@ -40,7 +39,6 @@ namespace ChordParse{
 
   void on_key_change(KeyDetection::KeyState event, int key){
     switch (state) {
-      case STATE_INIT: init_output(); // do not break, continue into state_idle logic
       case STATE_IDLE: {
         if (event == KeyDetection::KEY_DOWN){
           change_state(STATE_COLLECTING);
@@ -65,9 +63,10 @@ namespace ChordParse{
   static void change_state(STATE new_state) {
     switch (new_state){
       case STATE_COLLECTING: {
-        SharedClock_start_timer(on_chord_complete, NULL, NULL, CHORD_STABILIZE_MS);
+        timer = SharedClock_start_timer(on_chord_complete, NULL, NULL, CHORD_STABILIZE_MS);
       } break;
       case STATE_IDLE: {
+        SharedClock_cancel_timer(timer);
         on_chord_end();
       } break;
       case STATE_COMPLETE: {
@@ -79,6 +78,7 @@ namespace ChordParse{
   }
 
   static void on_chord_complete(void* context, void* extra, size_t timer_id){
+    timer = -1;
     change_state(STATE_COMPLETE);
     last_key = Chords::get_key(last_chord, current_voice);
 
@@ -94,7 +94,8 @@ namespace ChordParse{
   }
 
   static void on_chord_end(){
-      if (Chords::is_regular(last_key)){
+    timer = -1;
+    if (Chords::is_regular(last_key)){
       Output::release(last_key);
       clear_mods();
     }
@@ -111,13 +112,6 @@ namespace ChordParse{
     return result;
   }
 
-  static void init_output(){
-    if (USE_KEYBOARD){
-      Keyboard.begin();
-    } else {
-      Serial.println("Simulate starting keyboard now.");
-    }
-  }
 
   static void clear_mods() {
     if (mod_cmd) {
