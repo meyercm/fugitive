@@ -95,7 +95,7 @@ namespace ChordParse{
 
   static void on_chord_end(){
     timer = -1;
-    if (Chords::is_regular(last_key)){
+    if (Chords::is_regular(last_key) || Chords::is_mouse(last_key)){
       Output::release(last_key);
       clear_mods();
     }

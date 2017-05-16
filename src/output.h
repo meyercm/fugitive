@@ -12,8 +12,8 @@
 namespace Output{
   static void library_init();
 
-  void press(uint8_t key);
-  void release(uint8_t key);
+  void press(int key);
+  void release(int key);
 
 }
 
