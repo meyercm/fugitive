@@ -23,10 +23,9 @@ namespace Output{
     } else {
       if (USE_KEYBOARD) {
         Keyboard.press(key);
-      } else{
-        Serial.print("key down: ");
-        Serial.println(key);
       }
+      Serial.print("key down: ");
+      Serial.println((char)key);
     }
   }
   void release(int key) {
@@ -36,14 +35,18 @@ namespace Output{
     } else {
       if (USE_KEYBOARD) {
         Keyboard.release(key);
-      } else{
-        Serial.print("key up: ");
-        Serial.println(key);
       }
+      Serial.print("key up: ");
+      Serial.println((char)key);
     }
   }
 
-
+  void release_all(){
+    if (USE_KEYBOARD) {
+      Keyboard.releaseAll();
+    }
+    Serial.print("releasing all");
+  }
   static void library_init(){
     static bool init_complete = false;
     if (init_complete) { return; }

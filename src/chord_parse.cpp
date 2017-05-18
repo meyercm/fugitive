@@ -9,22 +9,27 @@
 #include "chords.h"
 #include "output.h"
 
-#define CHORD_STABILIZE_MS 30
+#define CHORD_STABILIZE_MS 60
 
 namespace ChordParse{
   typedef enum {
     STATE_IDLE,
-    STATE_COLLECTING,
+    STATE_PRESSING,
+    STATE_RELEASING,
     STATE_COMPLETE,
   } STATE;
 
 
   static void on_chord_complete(void* context, void* extra, size_t timer_id);
-  static void on_chord_end();
+  static void release_key();
+  static int next_chord();
   static int current_chord();
   static void change_state(STATE);
   static void clear_mods();
   static void set_mod(int key);
+  static void cancel_timer();
+  static void press_key(bool);
+  static void press_mods();
 
   // local variables
   static STATE state = STATE_IDLE;
@@ -32,28 +37,41 @@ namespace ChordParse{
   static size_t timer = -1;
   static int last_key = 0;
   static Chords::Voice current_voice = Chords::VOICE_NORMAL;
-  static bool mod_cmd = false;
-  static bool mod_alt = false;
-  static bool mod_shift = false;
-  static bool mod_ctrl = false;
+
+  typedef enum {
+    MOD_SHIFT = 0x01,
+    MOD_CTRL  = 0x02,
+    MOD_ALT   = 0x04,
+    MOD_CMD   = 0x08,
+  } MODS;
+
+  static int mods = 0;
 
   void on_key_change(KeyDetection::KeyState event, int key){
     switch (state) {
       case STATE_IDLE: {
         if (event == KeyDetection::KEY_DOWN){
-          change_state(STATE_COLLECTING);
+          change_state(STATE_PRESSING);
         }
       } break;
-      case STATE_COLLECTING: {
+      case STATE_PRESSING: {
         if (event == KeyDetection::KEY_UP){
-          change_state(STATE_IDLE);
+          press_key(false);
+          change_state(STATE_RELEASING);
+        }
+      } break;
+      case STATE_RELEASING: {
+        if (event == KeyDetection::KEY_DOWN){
+          change_state(STATE_PRESSING);
+        } else if (event == KeyDetection::KEY_UP){
+          change_state(STATE_RELEASING);
         }
       } break;
       case STATE_COMPLETE: {
         if (event == KeyDetection::KEY_UP){
-          change_state(STATE_IDLE);
+          change_state(STATE_RELEASING);
         } else if (event == KeyDetection::KEY_DOWN){
-          change_state(STATE_COLLECTING);
+          change_state(STATE_PRESSING);
         }
       } break;
       default: break;
@@ -62,24 +80,44 @@ namespace ChordParse{
 
   static void change_state(STATE new_state) {
     switch (new_state){
-      case STATE_COLLECTING: {
+      case STATE_PRESSING: {
+        Serial.println("new state: STATE_PRESSING");
         timer = SharedClock_start_timer(on_chord_complete, NULL, NULL, CHORD_STABILIZE_MS);
       } break;
+      case STATE_RELEASING: {
+        Serial.println("new state: STATE_RELEASING");
+        cancel_timer();
+        release_key();
+        if (next_chord() == 0) {
+          change_state(STATE_IDLE);
+        }
+      } break;
       case STATE_IDLE: {
-        SharedClock_cancel_timer(timer);
-        on_chord_end();
+        Serial.println("new state: STATE_IDLE");
+        cancel_timer();
+        Output::release_all();
       } break;
       case STATE_COMPLETE: {
-        last_chord = current_chord();
+        press_key(true);
+        Serial.println("new state: STATE_COMPLETE");
       } break;
       default: break;
     }
     state = new_state;
-  }
+}
 
   static void on_chord_complete(void* context, void* extra, size_t timer_id){
     timer = -1;
     change_state(STATE_COMPLETE);
+  }
+
+  static void press_key(bool use_next){
+    if (use_next){
+      last_chord = next_chord();
+    } else {
+      last_chord = current_chord();
+    }
+
     last_key = Chords::get_key(last_chord, current_voice);
 
     if (Chords::is_mod(last_key)){
@@ -89,12 +127,13 @@ namespace ChordParse{
       Serial.println("voice detected");
       current_voice = (Chords::Voice)last_key;
     } else {
+      press_mods();
       Output::press(last_key);
     }
   }
 
-  static void on_chord_end(){
-    timer = -1;
+  static void release_key(){
+    cancel_timer();
     if (Chords::is_regular(last_key) || Chords::is_mouse(last_key)){
       Output::release(last_key);
       clear_mods();
@@ -102,6 +141,15 @@ namespace ChordParse{
   }
 
   static uint8_t BITS[] = {1,2,4,8,16,32,64};
+  static int next_chord() {
+    uint8_t result = 0;
+    for (int i = 0; i < KeyDetection::KEY_COUNT; i++){
+      if (KeyDetection::next_key_state(i) == KeyDetection::KEY_DOWN){
+        result |= BITS[i];
+      }
+    }
+    return result;
+  }
   static int current_chord() {
     uint8_t result = 0;
     for (int i = 0; i < KeyDetection::KEY_COUNT; i++){
@@ -114,43 +162,59 @@ namespace ChordParse{
 
 
   static void clear_mods() {
-    if (mod_cmd) {
-      Output::release(Chords::KEY_CMD);
-      mod_cmd = false;
-    }
-    if (mod_alt) {
-      Output::release(KEY_LEFT_ALT);
-      mod_alt = false;
-    }
-    if (mod_shift) {
+    if (mods & MOD_SHIFT) {
       Output::release(KEY_LEFT_SHIFT);
-      mod_shift = false;
+      mods &= ~MOD_SHIFT;
     }
-    if (mod_ctrl) {
+    if (mods & MOD_CTRL) {
       Output::release(KEY_LEFT_CTRL);
-      mod_ctrl = false;
+      mods &= ~MOD_CTRL;
+    }
+    if (mods & MOD_ALT) {
+      Output::release(KEY_LEFT_ALT);
+      mods &= ~MOD_ALT;
+    }
+    if (mods & MOD_CMD) {
+      Output::release(Chords::KEY_CMD);
+      mods &= ~MOD_CMD;
+    }
+  }
+
+  static void press_mods(){
+    if (mods & MOD_SHIFT) {
+      Output::press(KEY_LEFT_SHIFT);
+    }
+    if (mods & MOD_CTRL) {
+      Output::press(KEY_LEFT_CTRL);
+    }
+    if (mods & MOD_ALT) {
+      Output::press(KEY_LEFT_ALT);
+    }
+    if (mods & MOD_CMD) {
+      Output::press(Chords::KEY_CMD);
     }
   }
 
   static void set_mod(int key) {
     switch (key) {
-      case Chords::MOD_CMD: {
-        Output::press(Chords::KEY_CMD);
-        mod_cmd = true;
-      } break;
-      case Chords::MOD_ALT: {
-        Output::press(KEY_LEFT_ALT);
-        mod_alt = true;
-      } break;
       case Chords::MOD_SHIFT: {
-        Output::press(KEY_LEFT_SHIFT);
-        mod_shift = true;
+        mods |= MOD_SHIFT;
       } break;
       case Chords::MOD_CTRL: {
-        Output::press(KEY_LEFT_CTRL);
-        mod_ctrl = true;
+        mods |= MOD_CTRL;
+      } break;
+      case Chords::MOD_ALT: {
+        mods |= MOD_ALT;
+      } break;
+      case Chords::MOD_CMD: {
+        mods |= MOD_CMD;
       } break;
       default: break;
     }
+  }
+
+  static void cancel_timer(){
+    SharedClock_cancel_timer(timer);
+    timer = -1;
   }
 }

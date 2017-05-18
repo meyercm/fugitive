@@ -26,7 +26,7 @@ namespace KeyDetection {
 
   void begin(KeyCallback callback);
   KeyState current_key_state(int key_num);
-
+  KeyState next_key_state(int key_num);
 };
 
 #endif

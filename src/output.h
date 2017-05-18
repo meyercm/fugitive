@@ -14,7 +14,7 @@ namespace Output{
 
   void press(int key);
   void release(int key);
-
+  void release_all();
 }
 
 #endif
